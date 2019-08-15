@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-32951228-4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-32951228-4');
+</script>
+ 	<meta charset="utf-8">
+ 	<title>MTA - The Working Parts</title>
+ 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="shortcut icon" type="image/png" href="http://realmta.info/images/lines/L.png"/>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="js/jui.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/jui.min.css">
+
+	<style>
+
+      *{box-sizing:border-box;}
+      
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      body{
+        background:#eee;
+        font-family: sans-serif;
+        letter-spacing:.02em;
+        font-size:12px;
+      }
+
+      a{text-decoration:none;}
+
+      .parent{border:10px solid #fff;         
+        position:absolute; 
+        top:10px; 
+        right:10px; 
+        width:75vw; 
+        height:calc(100vh - 20px); 
+        overflow:hidden;
+        box-shadow: 0px 3px 15px rgba(0,0,0,0.2);
+        background:white;
+      }
+
+      
+      #map {
+        position:relative;
+        background:#F4E8D5;
+        cursor:move;
+        top:-60%;
+        opacity:0;
+      }
+
+      #map.in{opacity:1;}
+
+      #map img{
+        position:absolute;
+        top:0;
+        left:0;
+        
+      }
+
+      #map img#base{position:relative;}
+      header{display:inline-block; width:25vw; padding:20px 50px; position:relative; height:100vh;}
+      header .logo{margin-top:10px; margin-bottom:20px; display:inline-block;}
+      header .logo img{
+        max-width:100%; 
+        display:block;
+        position: relative;
+        left: -7px;}
+      header p{margin-top:30px; line-height:16px;}
+      
+      .good{color:#006600; font-weight:bold; letter-spacing:0;}
+      .medium{color:#996600; font-weight:bold; letter-spacing:0;}
+      .bad{color:#990033; font-weight:bold; letter-spacing:0;}
+      
+      .time{font-family: monospace; font-weight:bold; letter-spacing:0;}
+      .mta{color: #24009B; font-weight: bold; letter-spacing:0;}
+      .mta:hover{text-decoration:underline; }
+      /*#credits1{position:absolute; left:50%; transform:translateX(-50%); bottom:14px;}*/
+      #credits1{margin-left:10px;}
+      #credits1 a{margin-left:10px;}
+      .credits a, a.tw{
+        color:blue; text-decoration:none;}
+        
+      #credits1 a:hover, a.tw:hover{color:black;}
+      a.tw img{width:10px;}
+      #status{margin-top:20px; padding-top:20px; position:relative; z-index: 2;}
+      #status img{width:23px;}
+      
+      #status a{pointer-events:none;}
+      #status a.faded{pointer-events:auto;}
+
+      .faded{opacity:.1;}
+      .faded:hover{opacity:.8;}
+
+      /*.st{background:white; padding:2px;}*/
+      #credits2{display:none;}
+  
+
+      .linksOut{position:absolute; bottom:10px; }
+	
+      @media (min-width: 1800px){
+         #map{top: -30%;}
+      }
+      
+
+  @media (max-width: 800px){
+		header{width:100vw; height:auto; padding:20px 20px;}
+    header .logo img{max-width:200px;}
+    header .logo{margin:0;}
+    header p{margin-top:5px;}
+    #status{display:none;}
+    #credits1{display:none;}
+    #credits2{ display:block; position:relative; left:0; bottom:0; text-align:center; margin:20px 0;}
+    .parent{width:100vw; position:relative; top:0; left:0; height:auto;}
+    #map img{width:800px;}
+    #map{    
+      left: -10%;
+      top: -20%;}
+	}
+  @media (max-width: 467px){
+    #map img{width:400px;}
+  }
+
+	</style>
+
+</head>
+  
+<body>
+
+</body>
+<header>
+  <a href="http://www.mta.info/" target="_blank" class="logo"><img src='logo.png'/></a>
+  <p>This map shows the current well-functioning lines of the NYC subway system.</p><p>Service status courtesy of <a class="mta" target="_blank" href="http://mta.info">mta.info</a> at <span class="time" id ="time"></span>.</p>
+  <p>Only lines that have <span class="good st">Good Service</span> are visible.</p>
+  <p>Hidden lines have <span class="bad st">Delays</span>, <span class="medium st">Service Changes</span>, or <span class="medium st">Planned Work</span>.</p>
+  <p>Good Luck!</p>
+  
+
+
+  <div id='status'>
+    <a class="iACE" href="http://www.mta.info/status/subway/ACE" target="_blank">
+      <img src="images/lines/A.png" />
+      <img src="images/lines/C.png" />
+      <img src="images/lines/E.png" />
+    </a>
+    <br>
+    <a class="i123" href="http://www.mta.info/status/subway/123" target="_blank">
+      <img src="images/lines/1.png" />
+      <img src="images/lines/2.png" />
+      <img src="images/lines/3.png" />
+    </a>
+    <br>
+    <a class="iBDFM" href="http://www.mta.info/status/subway/BDFM" target="_blank">
+      <img src="images/lines/B.png" />
+      <img src="images/lines/D.png" />
+      <img src="images/lines/F.png" />
+      <img src="images/lines/M.png" />
+    </a>
+    <br>
+    <a class="i456" href="http://www.mta.info/status/subway/456" target="_blank">
+      <img src="images/lines/4.png" />
+      <img src="images/lines/5.png" />
+      <img src="images/lines/6.png" />
+    </a>
+    <br>
+    <a class="iNQR" href="http://www.mta.info/status/subway/NQR" target="_blank">
+      <img src="images/lines/N.png" />
+      <img src="images/lines/Q.png" />
+      <img src="images/lines/R.png" />
+      <img src="images/lines/W.png" />
+    </a>
+    <br>
+    <a class="iJZ" href="http://www.mta.info/status/subway/JZ" target="_blank">
+      <img src="images/lines/J.png" />
+      <img src="images/lines/Z.png" />
+    </a>
+    <br>
+    <a class="i7" href="http://www.mta.info/status/subway/7" target="_blank">
+      <img src="images/lines/7.png" />
+    </a>
+    <br>
+    <a class="iL" href="http://www.mta.info/status/subway/L" target="_blank">
+      <img src="images/lines/L.png" />
+    </a>
+    <br>
+    <a class="iG" href="http://www.mta.info/status/subway/G" target="_blank">
+      <img src="images/lines/G.png" />
+    </a>
+    <br>
+    <a class="iS" href="http://www.mta.info/status/subway/S" target="_blank">
+      <img src="images/lines/S.png" />
+    </a>
+  </div>
+    
+    <div class="linksOut">
+    <span>
+    <a class="tw" href="http://www.twitter.com/realmtainfo" target="_blank"><img src="images/twitter.png" /> Commuter Updates</a>
+    </span>
+  <span id="credits1" class="credits"> | <a href="http://unfoundedlabs.com" target="_blank">Site by Unfl</a></span>
+</div>
+
+</header>
+
+<div class='parent'>
+  <div id="map" class="ui-widget-content">
+    <!-- <img id='cbase' src='images/colorbase.jpg' /> -->
+    <img id='base' src='images/base.jpg' />
+    <img id='l123' src='images/red.png' />
+    <img id='l456' src='images/green.png' />
+    <img id='lACE' src='images/blue.png' />
+    <img id='lNQR' src='images/yellow.png' />
+    <img id='lBDFM' src='images/orange.png' />
+    <img id='lG' src='images/lightgreen.png' />
+    <img id='lL' src='images/gray.png' />
+    <img id='lJZ' src='images/brown.png' />
+    <img id='lS' src='images/darkgray.png' />
+    <img id='l7' src='images/purple.png' />
+
+  </div>
+</div>
+
+<div id="credits2" class="credits"><a href="http://unfoundedlabs.com" target="_blank">Site by Unfl</a></div>
+
+
+<script type="text/javascript">
+
+
+ var HTML_FILE_URL = 'http://web.mta.info/status/serviceStatus.txt';
+
+
+$(document).ready( 
+    function() {     
+        $.ajax({          
+            type:  'GET',
+            url: 'test.php',
+            dataType: 'xml',              
+            success: function(data){
+                var time = $(data).find('timestamp').text();
+                $('#time').html(time);
+                
+                var time = $(data).find('subway').find('line:not(:last)').each(function(){
+                    var line= $(this).find('name').text();
+                    var icon;
+                    var status = $(this).find('status').text();
+                    
+                    if (status != "GOOD SERVICE"){
+                      
+                      icon = ".i"+line;
+                      line = "#l"+line;
+
+                      $(line).hide();
+                      $(icon).addClass('faded');
+                      
+                    }
+                    }
+                );
+
+            }
+         });
+    }
+);
+
+$( function() {
+    // $( "#map" ).draggable({ containment: "parent" , scroll: false});
+    if ($(window).width() > 800) {
+      $( "#map" ).draggable();
+    }
+    
+  } );
+
+$(window).on('load', function(){ 
+  $("#map").addClass('in'); 
+});
+
+
+</script>
+
+</html>

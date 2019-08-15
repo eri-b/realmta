@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+ 	<meta charset="utf-8">
+ 	<title>Accessible Subway - NYC Data</title>
+ 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="shortcut icon" type="image/png" href=""/>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+
+	<!-- <link rel="stylesheet" type="text/css" href="mystyle.css"> -->
+	<style>
+
+	   html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body{background:#F4E8D5; font-family: sans-serif; font-size:13px;}
+      #ctn{height:98vh; padding:1vh 1vw;}
+      #map, #pano {
+        float: left;
+        height: 100%;
+        width: 48.5vw;
+    box-sizing: border-box;
+    box-shadow: 0px 3px 15px rgba(0,0,0,0.4);
+        border:2px solid black;
+      }
+/*      #map{margin:2vh 1vw 2vh 3vw;}
+      #pano{margin:2vh 3vw 2vh 1vw;}*/
+      #map{margin-right:.5vw;}
+      #pano{position:relative; margin-left:.5vw;}
+	#pano p{position:absolute; display:inline-block; top:50%; left:50%; transform: translate(-50%,-50%);}
+		a{text-decoration: none; color:black; }
+	
+	a:hover{color:blue;}
+	.bottom{position:absolute; bottom:10px; left: 50%; transform: translateX(-50%); color:#d7ad6a; font-size:14px;}
+	@media (max-width: 900px) and (orientation: portrait){
+		#map, #pano{width:100vw; height:50vh; margin:0;}
+		#ctn{padding:0;}
+		.hidem{display:none;}
+		#pano p{min-width: 80%;}
+	}
+
+	</style>
+
+</head>
+  
+<body>
+<div id="ctn">
+<div id="map"></div>
+<div id="pano">
+	
+		<p><strong>NYC Subway Accessibility</strong><br class="hidem"><br class="hidem"><br ><br>94 of 424 subway stations are wheelchair accessible. The markers display the locations of acccessible stations.<br class="hidem"><br class="hidem"><br ><br>Clicking an icon will open Google Streetview at the closest point to the elevator access.<br class="hidem"><br class="hidem"><br ><br>Data provided by <a href="https://data.ny.gov/Transportation/NYC-Transit-Subway-Entrance-And-Exit-Data/i9wp-a4ja/data" target="_blank">NYC Open Data</a></p>
+
+		<a class="bottom" href="http://unfoundedlabs.com" target="_blank">&#x25CF;</a>
+	
+</div>
+</div>
+<script src="access.js"></script>
+<script>
+
+var map;
+function initMap(){
+	map = new google.maps.Map(document.getElementById('map'), {
+	  zoom: 12,
+	  center: {lat: 40.735697, lng: -73.970981},
+	  // mapTypeId: 'terrain'
+	});
+ 
+ 	console.log('transit layer here');
+		var transitLayer = new google.maps.TransitLayer();
+        transitLayer.setMap(map);
+
+
+	addMarkers();
+
+}
+
+
+function addMarkers(){
+	
+	var infoWindow;
+	var contentString;
+	var panorama;
+	var pos;
+	var marker;
+	var info;
+	var allLines;
+	
+
+	var markerlength = 1; //TEMPORARY
+
+	
+	// var positions = [
+	// 	["Canal", 40.719527, -74.001775],
+	// 	["City Hall", 40.713282, -74.006978],
+	// 	["Prince St", 40.724329, -73.997702]
+	// ];
+
+	var infowindow = new google.maps.InfoWindow();
+	var icon = {
+     url: 'icons/gray.png',
+    // scaledSize: new google.maps.Size(12, 20) // scaled size
+    
+	};
+	// Cycle through all markers
+	for (var i = 0; i < positions.length; i++) {
+		
+		// Current Station Information
+		var curPos = positions[i];
+
+		pos = {lat: Number(curPos[1]), lng: Number(curPos[2])};
+		
+		info = curPos[0];
+		allLines = curPos[3];
+		
+		marker = new google.maps.Marker({
+		    position: pos,
+		    map: map,
+		    title:info,
+		    icon: icon
+		});
+
+		
+
+
+		// Streetview
+	  	
+		
+		//On click, open info, and show streetview        
+        google.maps.event.addListener(marker, 'click', (function(marker, i, info, pos, allLines) {
+        	return function(){
+        		contentString = "<p>"+info+"</p><p>"+allLines+"</p>";
+        		infowindow.setContent(contentString);
+	    		infowindow.open(map, marker);
+
+	    		google.maps.event.addListener(infowindow,'closeclick',function(){
+   					$('#pano > div').remove();
+   					$('#pano').css("background-color","inherit");
+				});
+
+
+	    		var svService = new google.maps.StreetViewService();
+            var panoRequest = {
+                location: pos,
+                // preference: google.maps.StreetViewPreference.NEAREST,
+                radius: 500,
+                source: google.maps.StreetViewSource.OUTDOOR
+            };
+
+            svService.getPanorama(panoRequest, function(panoData, status){
+                    if (status === google.maps.StreetViewStatus.OK) {
+                        var panorama = new google.maps.StreetViewPanorama(
+                            document.getElementById('pano'),
+                            {
+                                pano: panoData.location.pano,
+                            });
+                    }
+                });
+
+
+	    		// panorama = new google.maps.StreetViewPanorama(
+	      //       document.getElementById('pano'), {
+	      //         position: pos,
+	      //          pov: {
+       //          	heading: 34,
+       //          	pitch: 10
+       //        		},
+	      //         	source: google.maps.StreetViewSource.OUTDOOR
+	      //  		});
+
+	       		
+	    		
+	    		// map.setStreetView(panorama);	
+        	}
+        	
+  		})(marker, i, info, pos, allLines));
+		
+		
+
+	}
+	
+
+}
+
+
+</script>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCBeRRun71hiYB58yS-A-9W8bI6wSn_kxM&callback=getData"></script>
+
+</body>
+</html>
